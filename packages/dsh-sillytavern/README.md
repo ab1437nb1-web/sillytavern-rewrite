@@ -22,7 +22,7 @@ plugin_manager install_bundle  target: <绝对路径>/packages/dsh-sillytavern
 
 ## 数据目录
 
-默认 `%DSH_PROFILE_DIR%\data\sillytavern`，可用环境变量 `DSH_SILLYTAVERN_DATA` 或各行 config 的 `dataDir` 覆盖：
+默认 `%DSH_HOME%\data\sillytavern`（本机为 `C:\Users\lenovo\.dsh\data\sillytavern`）；进程环境里存在 `DSH_PROFILE_DIR` 时优先用 `<profile>/data/sillytavern`。也可用环境变量 `DSH_SILLYTAVERN_DATA` 或各行 config 的 `dataDir` 覆盖：
 
 ```
 data/sillytavern/
