@@ -1,0 +1,30 @@
+# dsh-sillytavern: SillyTavern's three creative-writing systems for DSH.
+#
+# Rows reference this bundle's own files, so the package folder name never
+# matters. Each system is an independent row: disable one by id in a later
+# patch layer to keep the other two.
+- insert:
+    - id: st-characters
+      name: './characters/index.js'
+      config:
+        dataDir: ''
+        defaultCharacter: ''
+        injectGreetings: true
+        maxDescriptionTokens: 0
+
+    - id: st-worldbook
+      name: './worldbook/index.js'
+      config:
+        dataDir: ''
+        scanDepth: 4
+        tokenBudget: 1024
+        recursive: true
+        maxRecursionSteps: 2
+        insertHeader: true
+        caseSensitive: false
+
+    - id: st-presets
+      name: './presets/index.js'
+      config:
+        dataDir: ''
+        defaultPreset: ''
