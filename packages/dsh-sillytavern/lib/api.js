@@ -197,6 +197,29 @@ async function route(runtime, segments, method, url, request, response) {
     }
   }
 
+  if (root === 'personas') {
+    if (rest.length === 0 && method === 'GET') {
+      send(response, 200, { personas: await runtime.listPersonas() })
+      return
+    }
+    if (rest.length === 0 && method === 'POST') {
+      const body = await readBody(request)
+      send(response, 200, { persona: await runtime.savePersona(body ?? {}) })
+      return
+    }
+    if (rest.length === 1 && method === 'GET') {
+      const persona = await runtime.getPersona(rest[0])
+      if (!persona) return send(response, 404, { error: 'unknown persona' })
+      send(response, 200, { persona })
+      return
+    }
+    if (rest.length === 1 && method === 'DELETE') {
+      await runtime.deletePersona(rest[0])
+      send(response, 200, { ok: true })
+      return
+    }
+  }
+
   if (root === 'preview' && method === 'POST') {
     const body = await readBody(request)
     send(response, 200, await runtime.preview(body ?? {}))

@@ -142,7 +142,7 @@ export class Runtime {
       const table = sessionId ? 'sessions' : 'defaults'
       const current = state[table][key] ?? {}
       const next = { ...current, ...patch }
-      for (const field of ['characterId', 'presetId']) {
+      for (const field of ['characterId', 'presetId', 'personaId']) {
         if (next[field] === null) delete next[field]
       }
       if (Array.isArray(next.worldbookIds) && next.worldbookIds.length === 0) delete next.worldbookIds
@@ -285,6 +285,44 @@ export class Runtime {
     return this.store.remove('presets', id)
   }
 
+  // ---- the `<user>` identity --------------------------------------------
+
+  async listPersonas() {
+    const { docs } = await this.store.list('personas')
+    return docs.map((doc) => ({
+      id: doc.id,
+      name: doc.name,
+      descriptionPreview: (doc.description ?? '').slice(0, 160),
+      updatedAt: doc.updatedAt,
+    }))
+  }
+
+  async getPersona(id) {
+    return this.store.get('personas', id)
+  }
+
+  /** Creates or updates a persona; the name must be unique enough to pick by. */
+  async savePersona({ id, name, description }) {
+    if (!name || !String(name).trim()) throw new Error('persona needs a name')
+    const existing = id ? await this.store.get('personas', id) : null
+    return this.store.put('personas', {
+      ...(existing ?? {}),
+      name: String(name).trim(),
+      description: String(description ?? ''),
+    })
+  }
+
+  async deletePersona(id) {
+    return this.store.remove('personas', id)
+  }
+
+  async personaFor(binding) {
+    if (!binding?.personaId) return { name: 'User', description: '' }
+    const persona = await this.store.get('personas', binding.personaId)
+    if (!persona) return { name: 'User', description: '' }
+    return { name: persona.name || 'User', description: persona.description ?? '' }
+  }
+
   /** The preset the runtime falls back to when a session binds none. */
   async fallbackPreset() {
     const configured = this.configOf('presets').defaultPreset
@@ -316,6 +354,7 @@ export class Runtime {
   async compose(agent) {
     const binding = await this.binding(agent.id)
     const character = binding.characterId ? await this.store.get('characters', binding.characterId) : null
+    const persona = await this.personaFor(binding)
     const presetDoc = (binding.presetId ? await this.store.get('presets', binding.presetId) : null) ?? (await this.fallbackPreset())
     const preset = presetDoc ? normalizePreset(presetDoc, presetDoc.name) : normalizePreset({}, 'Built-in')
 
@@ -349,7 +388,7 @@ export class Runtime {
           depthPrompt: character?.depthPrompt?.prompt,
           creatorNotes: character?.creatorNotes,
         },
-        persona: { name: 'User', description: '' },
+        persona,
         options: {
           scanDepth: wbConfig.scanDepth ?? 4,
           budgetPercent: 25,
@@ -378,11 +417,11 @@ export class Runtime {
       preset,
       character: characterForPrompt,
       worldInfo,
-      persona: { name: 'User', description: '' },
+      persona,
       macros: {},
     })
 
-    if (!character && !books.length && !presetDoc) return ''
+    if (!character && !books.length && !presetDoc && !persona.description) return ''
 
     const depthText = (worldInfo.depth ?? [])
       .map((group) => group.entries.join('\n'))
@@ -457,8 +496,9 @@ export class Runtime {
   }
 
   /** A composed preview for the UI, without a live session. */
-  async preview({ characterId, worldbookIds = [], presetId, sampleText = '' }) {
+  async preview({ characterId, worldbookIds = [], presetId, personaId, sampleText = '' }) {
     const character = characterId ? await this.store.get('characters', characterId) : null
+    const persona = await this.personaFor({ personaId })
     const presetDoc = (presetId ? await this.store.get('presets', presetId) : null) ?? (await this.fallbackPreset())
     const preset = presetDoc ? normalizePreset(presetDoc, presetDoc.name) : normalizePreset({}, 'Built-in')
     const books = []
@@ -471,13 +511,14 @@ export class Runtime {
         books,
         messages: sampleText ? [{ role: 'user', text: sampleText }] : [],
         character,
+        persona,
         options: { scanDepth: 4, recursive: true, maxRecursionSteps: 2, maxContext: preset.maxContext ?? DEFAULT_MAX_CONTEXT, budgetPercent: 25 },
         turn: sampleText ? 1 : 0,
       })
       : { before: '', after: '', depth: [], activated: [] }
 
-    const built = buildPromptText({ preset, character, worldInfo: scan })
-    return { system: built.text, activated: scan.activated ?? [], depth: built.depth }
+    const built = buildPromptText({ preset, character, worldInfo: scan, persona })
+    return { system: built.text, activated: scan.activated ?? [], depth: built.depth, persona: persona.name }
   }
 }
 

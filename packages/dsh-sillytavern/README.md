@@ -7,8 +7,19 @@ SillyTavern 的三大创作系统，重写为 DeepSeek Harness（下称 DSH）�
 | **角色卡** | `src/character-card-parser.js`、`src/charx.js`、`public/scripts/char-data.js` | PNG(tEXt)/JSON/CHARX 导入导出、卡片库、会话绑定、字段注入提示词 |
 | **世界书** | `public/scripts/world-info.js`（1.19.0，6400 行） | 完整条目模型 + 激活引擎（关键词/次级键/递归/粘滞冷却/预算/分组/位置） |
 | **对话预设** | `public/scripts/openai.js`、`PromptManager.js` | 提示词管理器顺序、`main`/`jailbreak` 卡片覆写、采样参数映射 |
+| **`<user>` 设定** | `power_user.persona_description`、`{{user}}` 宏 | 角色名 + 描述，注入 `Persona Description` 槽位与 `{{user}}` |
 
-对话输入输出、消息历史、渲染、文件与会话管理全部复用 DSH 自身能力，本项目**不重写前端聊天界面**，只提供两个入口：设置页里的三个库管理界面，以及输入框左侧的"当前会话绑定"控件。
+对话输入输出、消息历史、渲染、文件与会话管理全部复用 DSH 自身能力，本项目**不重写前端聊天界面**。
+
+## 界面：就在对话里
+
+开启插件后，对话区**输入框上方**会出现一条工具栏（`conversation.input.dock`）：
+
+```
+[角色卡: Seraphina] [世界书: 1 条] [对话预设: Default] [<user>: Ash]   [面板]
+```
+
+四个胶囊直接显示当前会话的绑定状态，点击任意一个就地打开**库面板**（`shell.overlay`）到对应标签页；面板里可以导入、浏览、编辑、预览，并用「用于当前会话」把角色 / 世界书 / 预设 / `<user>` 直接绑给正在聊的这个会话，无需进入设置。设置页（设置 → SillyTavern）保留为同一套组件的第二个入口。
 
 ## 安装
 
@@ -30,6 +41,7 @@ data/sillytavern/
   characters/<id>.png    原始立绘（PNG 卡片才有）
   worlds/<id>.json       世界书，保持 SillyTavern 磁盘结构
   presets/<id>.json      对话预设（提示词条目 + 采样参数）
+  personas/<id>.json     <user> 设定（名称 + 描述）
   state.json             会话绑定与全局默认
 ```
 
@@ -39,14 +51,16 @@ data/sillytavern/
 |---|---|
 | `st_character` | `list` / `get` / `import` / `export` / `delete` / `use`（绑定当前会话）/ `unuse` / `default` / `greeting` |
 | `st_worldbook` | `list` / `get` / `import` / `delete` / `use` / `unuse` / `default` / `entry_put` / `entry_delete` / `scan`（干跑激活） |
-| `st_preset` | `list` / `get` / `import` / `delete` / `use` / `unuse` / `default` / `preview` |
+| `st_preset` | `list` / `get` / `import` / `delete` / `use` / `unuse` / `default` / `preview`（可带 `personaId`） |
+| `st_persona` | `list` / `get` / `save` / `delete` / `use` / `unuse` / `default` |
 
 `use` 不传 `sessionId` 时绑定调用者所在会话；`default` 写入全局默认，新会话继承。
 
 ## Web GUI
 
-- **设置 → SillyTavern**：三个标签页，分别管理角色卡（含立绘、导出）、世界书（条目编辑、激活测试）、预设（提示词顺序勾选、合成预览）。
-- **输入框左侧**：显示当前会话绑定的角色，点击可切换角色/预设。
+- **对话输入框上方**：四个绑定胶囊 + 「面板」，点击就地打开库面板，可导入、编辑、预览，并用「用于当前会话」直接绑定。
+- **设置 → SillyTavern**：同一套组件的第二个入口，四个标签页（角色卡 / 世界书 / 预设 / `<user>`）。
+- **输入框左侧**：紧凑的角色/预设切换器。
 
 ## 行为了对齐与差异
 

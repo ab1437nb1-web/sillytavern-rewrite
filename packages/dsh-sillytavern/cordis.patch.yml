@@ -28,3 +28,8 @@
       config:
         dataDir: ''
         defaultPreset: ''
+
+    - id: st-persona
+      name: './persona/index.js'
+      config:
+        dataDir: ''

@@ -1,6 +1,6 @@
-{
+﻿{
   "name": "dsh-sillytavern",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "SillyTavern character cards, world info (lorebooks) and chat presets for DeepSeek Harness",
@@ -8,6 +8,7 @@
     "./characters": "./characters/index.js",
     "./worldbook": "./worldbook/index.js",
     "./presets": "./presets/index.js",
+    "./persona": "./persona/index.js",
     "./client": "./client/index.js",
     "./locale/*.json": "./locale/*.json",
     "./icon": "./icon.svg",
@@ -17,6 +18,7 @@
     "characters",
     "worldbook",
     "presets",
+    "persona",
     "lib",
     "client",
     "locale/*.json",
@@ -25,7 +27,7 @@
     "README.md"
   ],
   "scripts": {
-    "test": "node test/smoke.mjs && node test/plugin.mjs && node test/client.mjs"
+    "test": "node test/smoke.mjs && node test/plugin.mjs && node test/client.mjs && node test/render.mjs"
   },
   "dsh": {
     "bundle": {
@@ -41,3 +43,4 @@
     }
   }
 }
+

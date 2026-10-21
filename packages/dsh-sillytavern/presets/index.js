@@ -38,6 +38,7 @@ export function apply(ctx, config = {}) {
       sessionId: str('Target session for use/unuse; defaults to the calling session.'),
       sampleText: str('Sample user text for preview.'),
       characterId: str('Character id for preview.'),
+      personaId: str('Persona id for preview.'),
       worldbookIds: { type: 'array', items: { type: 'string' }, description: 'World ids for preview.' },
       temperature: num('Override the preset temperature before previewing.'),
     }, ['action']),
@@ -81,6 +82,7 @@ export function apply(ctx, config = {}) {
             characterId: args.characterId,
             worldbookIds: args.worldbookIds ?? [],
             presetId: args.id,
+            personaId: args.personaId,
             sampleText: args.sampleText ?? '',
           })
           return result

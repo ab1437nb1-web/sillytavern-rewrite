@@ -1,6 +1,6 @@
 /**
- * Integration test for the three Host rows, driven through a fake Cordis
- * context: no DSH process needed.
+ * Integration test for the Host rows, driven through a fake Cordis context:
+ * no DSH process needed.
  *
  *   node test/plugin.mjs
  */
@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url'
 import { apply as characters } from '../characters/index.js'
 import { apply as worldbook } from '../worldbook/index.js'
 import { apply as presets } from '../presets/index.js'
+import { apply as personaPlugin } from '../persona/index.js'
 import { getRuntime } from '../lib/runtime.js'
 
 const here = fileURLToPath(new URL('.', import.meta.url))
@@ -73,6 +74,7 @@ const baseConfig = { dataDir }
 characters(fakeCtx('characters'), baseConfig)
 worldbook(fakeCtx('worldbook'), baseConfig)
 presets(fakeCtx('presets'), baseConfig)
+personaPlugin(fakeCtx('persona'), baseConfig)
 
 const runtime = getRuntime(baseConfig)
 await runtime.ready
@@ -141,6 +143,30 @@ assert.ok(preview.system.includes('Moonwell'), 'preview composes world info')
 // main prompt must precede the character description in this order
 const mainIndex = preview.system.indexOf("Write Seraphina's next reply")
 assert.ok(mainIndex >= 0, 'main prompt rendered')
+
+// ---- the <user> persona ---------------------------------------------------
+
+const persona = await call('st_persona', {
+  action: 'save',
+  name: 'Ash',
+  description: 'A traveller from the northern road, quiet and practical.',
+})
+assert.ok(persona.persona.id, 'persona saved')
+await call('st_persona', { action: 'use', id: persona.persona.id }, agent)
+
+const withPersona = await call('st_preset', {
+  action: 'preview',
+  id: preset.preset.id,
+  characterId: imported.character.id,
+  personaId: persona.persona.id,
+  sampleText: 'I ask about the Moonwell.',
+})
+assert.ok(withPersona.system.includes('A traveller from the northern road'), 'persona description reaches the prompt')
+assert.ok(withPersona.system.includes('between Seraphina and Ash'), '{{user}} renders the persona name')
+
+// The person's name also reaches world info scanning/matching through macros.
+const personaBound = await runtime.binding(agent.id)
+assert.equal(personaBound.personaId, persona.persona.id)
 
 const rawPreset = await runtime.getPreset(preset.preset.id)
 assert.equal(rawPreset.temperature, 1)

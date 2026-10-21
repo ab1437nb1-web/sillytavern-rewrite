@@ -79,12 +79,23 @@ const ctx = {
 
 module.apply(ctx)
 
-assert.deepEqual(registered.map((entry) => entry.key).sort(), ['conversation.input.left', 'settings.section'])
+assert.deepEqual(
+  registered.map((entry) => entry.key).sort(),
+  ['conversation.input.dock', 'conversation.input.left', 'settings.section', 'shell.overlay'],
+)
 assert.ok(registered.every((entry) => typeof entry.component === 'function'), 'each registration has a component')
 assert.equal(dictionaries.length, 1)
 assert.ok(dictionaries[0].dicts.zh && dictionaries[0].dicts.en, 'both dictionaries are registered')
 
-// The settings page and the composer control must be renderable in isolation.
+// The settings page, the dock, the panel and the composer control must all be
+// renderable in isolation. The panel renders nothing while closed, so open it.
+const panel = module.apply.__panel
+if (panel) {
+  panel.open = true
+  panel.sessionId = 'session-1'
+  panel.tab = 'characters'
+}
+
 const t = (key) => key
 for (const entry of registered) {
   const tree = entry.component({ t, sessionId: 'session-1' })

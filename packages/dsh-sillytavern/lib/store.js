@@ -6,6 +6,7 @@
  *                          came from a PNG, live beside it as <id>.png)
  *   worlds/<id>.json       world info book in SillyTavern's on-disk shape
  *   presets/<id>.json      chat preset (prompt manager + samplers)
+ *   personas/<id>.json     the `<user>` identity a session writes as
  *   state.json             session bindings and global defaults
  *
  * Writes are atomic (temp file + rename) so a crash cannot truncate a library,
@@ -16,7 +17,7 @@ import { randomUUID } from 'node:crypto'
 import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-export const KINDS = ['characters', 'worlds', 'presets']
+export const KINDS = ['characters', 'worlds', 'presets', 'personas']
 
 const EMPTY_STATE = { version: 1, sessions: {}, defaults: {} }
 
@@ -175,12 +176,14 @@ export class Store {
       characterId: own?.characterId ?? defaults.characterId ?? null,
       worldbookIds: own?.worldbookIds ?? defaults.worldbookIds ?? [],
       presetId: own?.presetId ?? defaults.presetId ?? null,
+      personaId: own?.personaId ?? defaults.personaId ?? null,
       greetingIndex: own?.greetingIndex ?? 0,
       sessionId: sessionId ?? null,
       inherited: {
         characterId: !own?.characterId && Boolean(defaults.characterId),
         worldbookIds: !own?.worldbookIds && Boolean(defaults.worldbookIds?.length),
         presetId: !own?.presetId && Boolean(defaults.presetId),
+        personaId: !own?.personaId && Boolean(defaults.personaId),
       },
     }
   }
