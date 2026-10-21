@@ -8,6 +8,10 @@
 window.__ModuleLoader__.load({
   id: 'dsh-sillytavern',
   factory(require) {
+    // A client module that throws while initialising fails the entire web boot
+    // ("web boot: 1 entry did not activate"), so the factory cannot be allowed
+    // to propagate: a broken panel must cost the panel, not the application.
+    try {
     const React = require('react')
     const h = React.createElement
     const { useState, useEffect, useCallback, useRef } = React
@@ -882,6 +886,10 @@ window.__ModuleLoader__.load({
     // the components from the exported function.
     apply.__components = { SettingsPage, CharactersTab, WorldsTab, PresetsTab, BindingControl }
 
-    return { inject: ['slots'], apply }
+      return { inject: ['slots'], apply }
+    } catch (error) {
+      console.error('[dsh-sillytavern] client module failed to initialise', error)
+      return { inject: ['slots'], apply() {} }
+    }
   },
 })
