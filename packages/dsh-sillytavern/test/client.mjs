@@ -91,4 +91,33 @@ for (const entry of registered) {
   assert.ok(tree && (tree.type === 'div' || typeof tree.type === 'function'), `${entry.key} renders a root element`)
 }
 
+// Every dictionary value must be a string: a function or object makes the
+// locale service reject the registration, which previously failed the whole
+// web boot.
+for (const dictionary of dictionaries) {
+  for (const [locale, dict] of Object.entries(dictionary.dicts)) {
+    for (const [key, value] of Object.entries(dict)) {
+      assert.equal(typeof value, 'string', `${locale}.${key} is a string`)
+    }
+  }
+}
+
+// A hostile client runtime — locale missing, registration throwing — must
+// degrade to "no panel" rather than failing the boot of the whole app.
+const hostile = {
+  effect() {
+    throw new Error('effect unavailable')
+  },
+  slots: {
+    inject() {
+      throw new Error('slot not declared')
+    },
+    register() {
+      throw new Error('register unavailable')
+    },
+  },
+}
+assert.doesNotThrow(() => module.apply(hostile), 'apply survives a broken client runtime')
+assert.doesNotThrow(() => module.apply({ effect() { throw new Error('x') }, slots: { inject() { throw new Error('y') } } }), 'apply survives a missing locale')
+
 console.log('client smoke tests passed')

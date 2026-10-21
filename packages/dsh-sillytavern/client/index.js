@@ -51,7 +51,6 @@ window.__ModuleLoader__.load({
       keywords: 'Keywords',
       content: 'Content',
       entryComment: 'Comment',
-      entryCount: (count) => `${count} entries`,
       errors: 'Something went wrong',
       current: 'This conversation',
       unbind: 'Unbind',
@@ -96,7 +95,6 @@ window.__ModuleLoader__.load({
       keywords: '关键词',
       content: '内容',
       entryComment: '备注',
-      entryCount: (count) => `${count} 条`,
       errors: '出错了',
       current: '当前会话',
       unbind: '解除绑定',
@@ -254,7 +252,7 @@ window.__ModuleLoader__.load({
     function ImportButton({ accept, onFile, t }) {
       const ref = useRef(null)
       return h(React.Fragment, null,
-        h('button', { style: styles.button(true), onClick: () => ref.current && ref.current.click() }, t.importFile),
+        h('button', { style: styles.button(true), onClick: () => ref.current && ref.current.click() }, t('importFile')),
         h('input', {
           ref,
           type: 'file',
@@ -296,7 +294,7 @@ window.__ModuleLoader__.load({
         try {
           const base64 = dataUrl.slice(dataUrl.indexOf(',') + 1)
           await api('/characters/import', { method: 'POST', body: JSON.stringify({ filename: file.name, base64 }) })
-          setNote(t.imported)
+          setNote(t('imported'))
           reloadList()
         } catch (error) {
           setNote(error.message)
@@ -311,7 +309,7 @@ window.__ModuleLoader__.load({
       const remove = async () => {
         await api(`/characters/${selected}`, { method: 'DELETE' })
         setSelected(null)
-        setNote(t.deleted)
+        setNote(t('deleted'))
         reloadList()
       }
 
@@ -331,7 +329,7 @@ window.__ModuleLoader__.load({
           h('div', { style: styles.list },
             list.error ? h('div', { style: { padding: 12 } }, h('div', { style: styles.error }, list.error.message)) : null,
             !list.loading && list.data && list.data.length === 0
-              ? h('div', { style: { padding: 12, ...styles.muted } }, t.empty)
+              ? h('div', { style: { padding: 12, ...styles.muted } }, t('empty'))
               : null,
             (list.data || []).map((item) => h('div', {
               key: item.id,
@@ -342,11 +340,11 @@ window.__ModuleLoader__.load({
             h('div', { style: { minWidth: 0 } },
               h('div', { style: { fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, item.name),
               h('div', { style: { ...styles.muted, fontSize: '11px' } },
-                [item.creator, defaults.characterId === item.id ? t.defaultBadge : null].filter(Boolean).join(' · ') || '—'),
+                [item.creator, defaults.characterId === item.id ? t('defaultBadge') : null].filter(Boolean).join(' · ') || '—'),
             )),
           )),
           h('div', { style: styles.panel },
-            !selected ? h('div', { style: styles.muted }, t.empty) : null,
+            !selected ? h('div', { style: styles.muted }, t('empty')) : null,
             selected && detail ? h('div', null,
               h('div', { style: { display: 'flex', gap: 14, alignItems: 'flex-start' } },
                 h(Avatar, { id: detail.id, name: detail.name, size: 72 }),
@@ -360,15 +358,15 @@ window.__ModuleLoader__.load({
                 ),
               ),
               h('div', { style: { display: 'flex', gap: 8, margin: '14px 0', flexWrap: 'wrap' } },
-                h('button', { style: styles.button(true), onClick: setDefault }, t.setDefault),
-                h('button', { style: styles.button(false), onClick: () => download('png') }, t.exportPng),
-                h('button', { style: styles.button(false), onClick: () => download('json') }, t.exportJson),
-                h('button', { style: { ...styles.button(false), color: 'var(--dsw-alias-state-error-primary)' }, onClick: remove }, t.delete),
+                h('button', { style: styles.button(true), onClick: setDefault }, t('setDefault')),
+                h('button', { style: styles.button(false), onClick: () => download('png') }, t('exportPng')),
+                h('button', { style: styles.button(false), onClick: () => download('json') }, t('exportJson')),
+                h('button', { style: { ...styles.button(false), color: 'var(--dsw-alias-state-error-primary)' }, onClick: remove }, t('delete')),
               ),
-              h('div', { style: styles.muted }, t.content),
+              h('div', { style: styles.muted }, t('content')),
               h('div', { style: styles.pre }, detail.description || '—'),
               detail.firstMes ? h('div', null,
-                h('div', { style: { ...styles.muted, marginTop: 12 } }, t.greetings),
+                h('div', { style: { ...styles.muted, marginTop: 12 } }, t('greetings')),
                 h('div', { style: styles.pre }, [detail.firstMes, ...(detail.alternateGreetings || [])].join('\n\n———\n\n')),
               ) : null,
             ) : null,
@@ -406,7 +404,7 @@ window.__ModuleLoader__.load({
           const base64 = dataUrl.slice(dataUrl.indexOf(',') + 1)
           const json = base64ToText(base64)
           await api('/worlds/import', { method: 'POST', body: JSON.stringify({ name: file.name.replace(/\.json$/i, ''), json }) })
-          setNote(t.imported)
+          setNote(t('imported'))
           reloadList()
         } catch (error) {
           setNote(error.message)
@@ -448,7 +446,7 @@ window.__ModuleLoader__.load({
         h('div', { style: styles.columns },
           h('div', { style: styles.list },
             !list.loading && list.data && list.data.length === 0
-              ? h('div', { style: { padding: 12, ...styles.muted } }, t.empty) : null,
+              ? h('div', { style: { padding: 12, ...styles.muted } }, t('empty')) : null,
             (list.data || []).map((item) => h('div', {
               key: item.id,
               style: styles.row(selected === item.id),
@@ -457,12 +455,12 @@ window.__ModuleLoader__.load({
             h('div', { style: { minWidth: 0 } },
               h('div', { style: { fontSize: '13px' } }, item.name),
               h('div', { style: { ...styles.muted, fontSize: '11px' } },
-                [t.entryCount(item.entries), defaults.worldbookIds && defaults.worldbookIds.includes(item.id) ? t.defaultBadge : null]
+                [`${item.entries} ${t('entries')}`, defaults.worldbookIds && defaults.worldbookIds.includes(item.id) ? t('defaultBadge') : null]
                   .filter(Boolean).join(' · ')),
             )),
           )),
           h('div', { style: styles.panel },
-            !selected ? h('div', { style: styles.muted }, t.empty) : null,
+            !selected ? h('div', { style: styles.muted }, t('empty')) : null,
             selected ? h('div', null,
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
                 h('div', { style: { fontSize: '15px', fontWeight: 600 } }, detail ? detail.name : ''),
@@ -474,24 +472,24 @@ window.__ModuleLoader__.load({
                     await api('/defaults', { method: 'POST', body: JSON.stringify({ worldbookIds: next }) })
                     setDefaults((state) => ({ ...state, worldbookIds: next }))
                   },
-                }, t.setDefault),
+                }, t('setDefault')),
               ),
               h('div', { style: { ...styles.toolbar, marginTop: 12 } },
                 h('input', {
                   style: { ...styles.input, flex: 1, minWidth: 160 },
-                  placeholder: t.scanHint,
+                  placeholder: t('scanHint'),
                   value: scanText,
                   onChange: (event) => setScanText(event.target.value),
                 }),
-                h('button', { style: styles.button(false), onClick: runScan }, t.scanRun),
-                h('button', { style: styles.button(false), onClick: () => setEditing({ uid: '', ...EMPTY_ENTRY }) }, t.newEntry),
+                h('button', { style: styles.button(false), onClick: runScan }, t('scanRun')),
+                h('button', { style: styles.button(false), onClick: () => setEditing({ uid: '', ...EMPTY_ENTRY }) }, t('newEntry')),
               ),
               scan ? h('div', { style: { marginBottom: 12 } },
-                h('div', { style: styles.muted }, `${t.activated}: ${scan.activated.length} · ${t.scanResult}`),
+                h('div', { style: styles.muted }, `${t('activated')}: ${scan.activated.length} · ${t('scanResult')}`),
                 h('div', { style: styles.pre },
-                  [...scan.activated.map((entry) => entry.comment || `#${entry.uid}`)].join('\n') || t.none),
+                  [...scan.activated.map((entry) => entry.comment || `#${entry.uid}`)].join('\n') || t('none')),
               ) : null,
-              h('div', { style: styles.muted, marginBottom: 6 }, `${t.entries}: ${entries.length}`),
+              h('div', { style: styles.muted, marginBottom: 6 }, `${t('entries')}: ${entries.length}`),
               entries.map(([uid, entry]) => h('div', {
                 key: uid,
                 style: {
@@ -509,11 +507,11 @@ window.__ModuleLoader__.load({
                 h('div', { style: { fontSize: '11px', color: 'var(--dsw-alias-label-secondary)', marginTop: 2, maxHeight: 34, overflow: 'hidden' } },
                   String(entry.content || '').slice(0, 160)),
               ),
-              h('button', { style: styles.button(false), onClick: () => setEditing({ uid, ...entry }) }, t.editEntry),
+              h('button', { style: styles.button(false), onClick: () => setEditing({ uid, ...entry }) }, t('editEntry')),
               h('button', {
                 style: { ...styles.button(false), color: 'var(--dsw-alias-state-error-primary)' },
                 onClick: () => removeEntry(uid),
-              }, t.delete)),
+              }, t('delete'))),
               ),
               editing ? h(EntryEditor, { t, entry: editing, onCancel: () => setEditing(null), onSave: saveEntry }) : null,
             ) : null,
@@ -558,16 +556,16 @@ window.__ModuleLoader__.load({
         },
         onClick: (event) => event.stopPropagation(),
       },
-      h('div', { style: { fontSize: 15, fontWeight: 600, marginBottom: 12 } }, t.editEntry),
-      field(t.entryComment, h('input', {
+      h('div', { style: { fontSize: 15, fontWeight: 600, marginBottom: 12 } }, t('editEntry')),
+      field(t('entryComment'), h('input', {
         style: styles.input, value: form.comment,
         onChange: (event) => setForm({ ...form, comment: event.target.value }),
       })),
-      field(t.keywords, h('input', {
+      field(t('keywords'), h('input', {
         style: styles.input, value: form.key, placeholder: 'dragon, /dr[a-z]+gon/i',
         onChange: (event) => setForm({ ...form, key: event.target.value }),
       })),
-      field(t.content, h('textarea', {
+      field(t('content'), h('textarea', {
         style: { ...styles.input, minHeight: 120, resize: 'vertical' }, value: form.content,
         onChange: (event) => setForm({ ...form, content: event.target.value }),
       })),
@@ -583,7 +581,7 @@ window.__ModuleLoader__.load({
         h('input', { type: 'checkbox', checked: form.constant, onChange: (event) => setForm({ ...form, constant: event.target.checked }) }),
         h('span', { style: { fontSize: 12 } }, 'constant (always active)')),
       h('div', { style: { display: 'flex', gap: 8, justifyContent: 'flex-end' } },
-        h('button', { style: styles.button(false), onClick: onCancel }, t.cancel),
+        h('button', { style: styles.button(false), onClick: onCancel }, t('cancel')),
         h('button', {
           style: styles.button(true),
           onClick: () => onSave(entry.uid, {
@@ -600,7 +598,7 @@ window.__ModuleLoader__.load({
             selective: form.selective,
             selectiveLogic: form.selectiveLogic,
           }),
-        }, t.save),
+        }, t('save')),
       )))
     }
 
@@ -628,7 +626,7 @@ window.__ModuleLoader__.load({
           const base64 = dataUrl.slice(dataUrl.indexOf(',') + 1)
           const json = base64ToText(base64)
           await api('/presets/import', { method: 'POST', body: JSON.stringify({ name: file.name.replace(/\.json$/i, ''), json }) })
-          setNote(t.imported)
+          setNote(t('imported'))
           reloadList()
         } catch (error) {
           setNote(error.message)
@@ -655,7 +653,7 @@ window.__ModuleLoader__.load({
         h('div', { style: styles.columns },
           h('div', { style: styles.list },
             !list.loading && list.data && list.data.length === 0
-              ? h('div', { style: { padding: 12, ...styles.muted } }, t.empty) : null,
+              ? h('div', { style: { padding: 12, ...styles.muted } }, t('empty')) : null,
             (list.data || []).map((item) => h('div', {
               key: item.id,
               style: styles.row(selected === item.id),
@@ -664,11 +662,11 @@ window.__ModuleLoader__.load({
             h('div', { style: { minWidth: 0 } },
               h('div', { style: { fontSize: '13px' } }, item.name),
               h('div', { style: { ...styles.muted, fontSize: '11px' } },
-                [String(item.prompts), defaults.presetId === item.id ? t.defaultBadge : null].filter(Boolean).join(' · ')),
+                [String(item.prompts), defaults.presetId === item.id ? t('defaultBadge') : null].filter(Boolean).join(' · ')),
             )),
           )),
           h('div', { style: styles.panel },
-            !selected ? h('div', { style: styles.muted }, t.empty) : null,
+            !selected ? h('div', { style: styles.muted }, t('empty')) : null,
             selected ? h('div', null,
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                 h('div', { style: { fontSize: 15, fontWeight: 600 } }, detail ? detail.name : ''),
@@ -679,13 +677,13 @@ window.__ModuleLoader__.load({
                       await api('/defaults', { method: 'POST', body: JSON.stringify({ presetId: selected }) })
                       setDefaults((state) => ({ ...state, presetId: selected }))
                     },
-                  }, t.setDefault),
-                  h('button', { style: styles.button(false), onClick: runPreview }, t.preview),
+                  }, t('setDefault')),
+                  h('button', { style: styles.button(false), onClick: runPreview }, t('preview')),
                 ),
               ),
               detail ? h('div', { style: { ...styles.muted, marginTop: 4 } },
                 `temperature ${detail.temperature} · top_p ${detail.topP} · max_tokens ${detail.maxTokens ?? '—'}`) : null,
-              h('div', { style: { ...styles.muted, margin: '14px 0 6px' } }, t.promptOrder),
+              h('div', { style: { ...styles.muted, margin: '14px 0 6px' } }, t('promptOrder')),
               order.map((entry, index) => {
                 const prompt = byId.get(entry.identifier)
                 return h('div', {
@@ -711,7 +709,7 @@ window.__ModuleLoader__.load({
                 )
               }),
               preview ? h('div', { style: { marginTop: 16 } },
-                h('div', { style: styles.muted }, t.previewHint),
+                h('div', { style: styles.muted }, t('previewHint')),
                 h('div', { style: styles.pre }, preview.system || '—'),
               ) : null,
             ) : null,
@@ -726,13 +724,13 @@ window.__ModuleLoader__.load({
       const t = props.t
       const [tab, setTab] = useState('characters')
       return h('div', { style: styles.page },
-        h('div', { style: { fontSize: 18, fontWeight: 600, marginBottom: 14 } }, t.title),
+        h('div', { style: { fontSize: 18, fontWeight: 600, marginBottom: 14 } }, t('title')),
         h('div', { style: styles.tabs },
           ['characters', 'worlds', 'presets'].map((key) => h('button', {
             key,
             style: styles.tab(tab === key),
             onClick: () => setTab(key),
-          }, t[key])),
+          }, t(key))),
         ),
         tab === 'characters' ? h(CharactersTab, { t }) : null,
         tab === 'worlds' ? h(WorldsTab, { t }) : null,
@@ -786,7 +784,7 @@ window.__ModuleLoader__.load({
       const current = state.binding
       const name = current && current.characterId
         ? (state.characters.find((item) => item.id === current.characterId) || {}).name || '…'
-        : t.bindCharacter
+        : t('bindCharacter')
 
       const item = (label, active, onClick) => h('button', {
         key: label,
@@ -807,7 +805,7 @@ window.__ModuleLoader__.load({
             color: 'var(--dsw-alias-label-secondary)', fontSize: 12,
           },
           onClick: () => setOpen(!open),
-          title: t.bindCharacter,
+          title: t('bindCharacter'),
         },
         current && current.characterId ? h(Avatar, { id: current.characterId, name, size: 18 }) : null,
         h('span', { style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, name)),
@@ -820,14 +818,14 @@ window.__ModuleLoader__.load({
           },
         },
         error ? h('div', { style: { ...styles.error, padding: 6 } }, error) : null,
-        h('div', { style: { ...styles.muted, padding: '4px 10px' } }, t.bindCharacter),
-        item(t.none, !current || !current.characterId, () => apply({ characterId: null })),
+        h('div', { style: { ...styles.muted, padding: '4px 10px' } }, t('bindCharacter')),
+        item(t('none'), !current || !current.characterId, () => apply({ characterId: null })),
         state.characters.map((character) => item(
           character.name,
           current && current.characterId === character.id,
           () => apply({ characterId: character.id }),
         )),
-        h('div', { style: { ...styles.muted, padding: '8px 10px 4px', borderTop: '1px solid var(--dsw-alias-border-l1)' } }, t.bindPreset),
+        h('div', { style: { ...styles.muted, padding: '8px 10px 4px', borderTop: '1px solid var(--dsw-alias-border-l1)' } }, t('bindPreset')),
         state.presets.map((preset) => item(
           preset.name,
           current && current.presetId === preset.id,
@@ -839,27 +837,51 @@ window.__ModuleLoader__.load({
 
     // ---- apply ------------------------------------------------------------
 
-    return {
-      inject: ['slots'],
-      apply(ctx) {
+    // One client entry that throws fails the entire web boot ("web boot: 1
+    // entry did not activate"), so every optional registration is guarded: a
+    // missing locale or a slot that is not declared yet must degrade to "no
+    // panel", never to "the app does not start".
+    function apply(ctx) {
+      let t = (key) => key
+      try {
         ctx.effect(() => ctx.locale.register(NS, { en, zh }), 'dsh-sillytavern: dictionaries')
-        const t = ctx.locale.bind(NS)
+      } catch (error) {
+        console.error('[dsh-sillytavern] locale registration failed', error)
+      }
+      try {
+        if (typeof ctx.locale?.bind === 'function') t = ctx.locale.bind(NS)
+      } catch (error) {
+        console.error('[dsh-sillytavern] locale binding failed', error)
+      }
 
-        ctx.slots.inject('settings.section', () => ctx.slots.register({
-          name: 'settings.section',
-          id: 'sillytavern',
-          order: 45,
-          label: () => t('title'),
-          locale: NS,
-          inject: () => ({ t }),
-        }, SettingsPage))
+      const register = (slot, options, component) => {
+        try {
+          ctx.slots.inject(slot, () => ctx.slots.register(options, component))
+        } catch (error) {
+          console.error(`[dsh-sillytavern] cannot register ${slot}`, error)
+        }
+      }
 
-        ctx.slots.inject('conversation.input.left', () => ctx.slots.register({
-          name: 'conversation.input.left',
-          id: 'st-binding',
-          order: 40,
-        }, (props) => h(BindingControl, { ...props, t })))
-      },
+      register('settings.section', {
+        name: 'settings.section',
+        id: 'sillytavern',
+        order: 45,
+        label: () => t('title'),
+        locale: NS,
+        inject: () => ({ t }),
+      }, SettingsPage)
+
+      register('conversation.input.left', {
+        name: 'conversation.input.left',
+        id: 'st-binding',
+        order: 40,
+      }, (props) => h(BindingControl, { ...props, t }))
     }
+
+    // Test hook, not part of the plugin surface: the offline render test reads
+    // the components from the exported function.
+    apply.__components = { SettingsPage, CharactersTab, WorldsTab, PresetsTab, BindingControl }
+
+    return { inject: ['slots'], apply }
   },
 })
